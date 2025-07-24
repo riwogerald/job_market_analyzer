@@ -1,4 +1,4 @@
-# Kenya Job Market Analysis Platform
+# Kenya Job Market Analysis Platform (Alpha Build)
 
 A comprehensive job market analysis platform that scrapes job postings from major job sites (LinkedIn, Indeed, Glassdoor) and provides real-time insights into the Kenyan job market including salary trends, skill demand, remote work opportunities, and hiring patterns.
 
