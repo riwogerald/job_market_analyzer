@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 import logging
 from .linkedin_scraper import LinkedInScraper
 from .indeed_scraper import IndeedScraper
+from .glassdoor_scraper import GlassdoorScraper
+from .career_pages_scraper import CareerPagesScraper
 from ..jobs.models import JobPosting, Company, SkillDemand
 from ..analytics.services import AnalyticsService
 
@@ -24,6 +26,10 @@ def scrape_all_platforms():
         for location in locations:
             scrape_linkedin_jobs.delay(search_term, location)
             scrape_indeed_jobs.delay(search_term, location)
+            scrape_glassdoor_jobs.delay(search_term, location)
+    
+    # Scrape career pages (doesn't need search terms/locations)
+    scrape_career_pages.delay()
 
 @shared_task
 def scrape_linkedin_jobs(search_term="", location="Kenya", max_pages=3):
@@ -66,6 +72,50 @@ def scrape_indeed_jobs(search_term="", location="Nairobi", max_pages=3):
     except Exception as e:
         logger.error(f"Error in Indeed scraping task: {e}")
         return f"Indeed scraping failed: {e}"
+    finally:
+        scraper.close()
+
+@shared_task
+def scrape_glassdoor_jobs(search_term="", location="Kenya", max_pages=3):
+    """Scrape jobs from Glassdoor"""
+    scraper = GlassdoorScraper()
+    
+    try:
+        jobs = scraper.scrape_jobs(search_term, location, max_pages)
+        saved_count = 0
+        
+        for job_data in jobs:
+            if save_job_posting(job_data):
+                saved_count += 1
+        
+        logger.info(f"Glassdoor: Scraped {len(jobs)} jobs, saved {saved_count} new jobs")
+        return f"Glassdoor: {saved_count} new jobs saved"
+        
+    except Exception as e:
+        logger.error(f"Error in Glassdoor scraping task: {e}")
+        return f"Glassdoor scraping failed: {e}"
+    finally:
+        scraper.close()
+
+@shared_task
+def scrape_career_pages():
+    """Scrape jobs from company career pages"""
+    scraper = CareerPagesScraper()
+    
+    try:
+        jobs = scraper.scrape_jobs()
+        saved_count = 0
+        
+        for job_data in jobs:
+            if save_job_posting(job_data):
+                saved_count += 1
+        
+        logger.info(f"Career Pages: Scraped {len(jobs)} jobs, saved {saved_count} new jobs")
+        return f"Career Pages: {saved_count} new jobs saved"
+        
+    except Exception as e:
+        logger.error(f"Error in Career Pages scraping task: {e}")
+        return f"Career Pages scraping failed: {e}"
     finally:
         scraper.close()
 
