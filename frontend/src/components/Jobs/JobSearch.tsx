@@ -17,18 +17,18 @@ import { SearchFilters } from '../../types';
 import { debounce } from 'lodash';
 
 interface JobSearchProps {
-  onSearch: (filters: SearchFilters) => void;
+  onFiltersChange: (filters: SearchFilters) => void;
   initialFilters?: SearchFilters;
 }
 
-const JobSearch: React.FC<JobSearchProps> = ({ onSearch, initialFilters = {} }) => {
+const JobSearch: React.FC<JobSearchProps> = ({ onFiltersChange, initialFilters = {} }) => {
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
 
   const debouncedSearch = useCallback(
     debounce((searchFilters: SearchFilters) => {
-      onSearch(searchFilters);
+      onFiltersChange(searchFilters);
     }, 500),
-    [onSearch]
+    [onFiltersChange]
   );
 
   const handleFilterChange = (key: keyof SearchFilters, value: any) => {
@@ -39,7 +39,7 @@ const JobSearch: React.FC<JobSearchProps> = ({ onSearch, initialFilters = {} }) 
 
   const clearFilters = () => {
     setFilters({});
-    onSearch({});
+    onFiltersChange({});
   };
 
   const activeFiltersCount = Object.values(filters).filter(Boolean).length;
