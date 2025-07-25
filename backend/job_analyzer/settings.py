@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,6 +38,24 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'job_analyzer.urls'
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'job_analyzer.wsgi.application'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -67,6 +86,40 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
 }
 
+# Password validation
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+# Internationalization
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'Africa/Nairobi'
+USE_I18N = True
+USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = []
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # Scraping settings
 SCRAPING_DELAY = 2  # seconds between requests
 USER_AGENT_LIST = [
@@ -74,3 +127,19 @@ USER_AGENT_LIST = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
 ]
+
+# Celery Beat Schedule
+CELERY_BEAT_SCHEDULE = {
+    'scrape-all-platforms': {
+        'task': 'apps.scrapers.tasks.scrape_all_platforms',
+        'schedule': 60.0 * 60.0 * 6,  # Every 6 hours
+    },
+    'update-skill-demand': {
+        'task': 'apps.scrapers.tasks.update_skill_demand',
+        'schedule': 60.0 * 60.0 * 12,  # Every 12 hours
+    },
+    'cleanup-old-jobs': {
+        'task': 'apps.scrapers.tasks.cleanup_old_jobs',
+        'schedule': 60.0 * 60.0 * 24 * 7,  # Weekly
+    },
+}
