@@ -57,174 +57,175 @@ const JobList: React.FC = () => {
   return (
     <Container maxWidth="xl">
       <Box sx={{ py: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Job Opportunities in Kenya
-        </Typography>
-        
-        <JobSearch onFiltersChange={handleFiltersChange} />
-        
-        <Box sx={{ mt: 4, mb: 2 }}>
-          <Typography variant="h6" color="text.secondary">
-            {data?.data.count ? `${data.data.count} jobs found` : 'Loading...'}
+        <>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Job Opportunities in Kenya
           </Typography>
-        </Box>
-
-        {isLoading && (
-          <Box display="flex" justifyContent="center" sx={{ py: 4 }}>
-            <CircularProgress />
+          
+          <JobSearch onFiltersChange={handleFiltersChange} />
+          
+          <Box sx={{ mt: 4, mb: 2 }}>
+            <Typography variant="h6" color="text.secondary">
+              {data?.data.count ? `${data.data.count} jobs found` : 'Loading...'}
+            </Typography>
           </Box>
-        )}
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            Failed to load jobs. Please try again.
-          </Alert>
-        )}
+          {isLoading && (
+            <Box display="flex" justifyContent="center" sx={{ py: 4 }}>
+              <CircularProgress />
+            </Box>
+          )}
 
-        <Grid container spacing={3}>
-          {jobs.map((job: JobPosting) => (
-            <Grid item xs={12} key={job.id}>
-              <Card sx={{ '&:hover': { elevation: 4 } }}>
-                <CardContent>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={8}>
-                      <Typography variant="h6" component="h2" gutterBottom>
-                        <Link 
-                          to={`/jobs/${job.id}`}
-                          style={{ textDecoration: 'none', color: 'inherit' }}
-                        >
-                          {job.title}
-                        </Link>
-                      </Typography>
-                      
-                      <Box display="flex" alignItems="center" gap={1} mb={1}>
-                        <Business fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
-                          {job.company.name}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              Failed to load jobs. Please try again.
+            </Alert>
+          )}
+
+          <Grid container spacing={3}>
+            {jobs.map((job: JobPosting) => (
+              <Grid item xs={12} key={job.id}>
+                <Card sx={{ '&:hover': { elevation: 4 } }}>
+                  <CardContent>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={8}>
+                        <Typography variant="h6" component="h2" gutterBottom>
+                          <Link 
+                            to={`/jobs/${job.id}`}
+                            style={{ textDecoration: 'none', color: 'inherit' }}
+                          >
+                            {job.title}
+                          </Link>
                         </Typography>
-                      </Box>
-
-                      <Box display="flex" alignItems="center" gap={1} mb={1}>
-                        <LocationOn fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
-                          {job.location}
-                        </Typography>
-                      </Box>
-
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
-                        sx={{ 
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                          mb: 2
-                        }}
-                      >
-                        {job.description}
-                      </Typography>
-
-                      <Box display="flex" flexWrap="wrap" gap={1}>
-                        {job.skills_required.slice(0, 5).map((skill, index) => (
-                          <Chip
-                            key={index}
-                            label={skill}
-                            size="small"
-                            variant="outlined"
-                            color="primary"
-                          />
-                        ))}
-                        {job.skills_required.length > 5 && (
-                          <Chip
-                            label={`+${job.skills_required.length - 5} more`}
-                            size="small"
-                            variant="outlined"
-                          />
-                        )}
-                      </Box>
-                    </Grid>
-
-                    <Grid item xs={12} md={4}>
-                      <Box textAlign={{ xs: 'left', md: 'right' }}>
-                        {job.salary_min && (
-                          <Box display="flex" alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }} gap={1} mb={1}>
-                            <AttachMoney fontSize="small" color="action" />
-                            <Typography variant="body2" fontWeight="medium">
-                              {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
-                            </Typography>
-                          </Box>
-                        )}
-
-                        <Box display="flex" alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }} gap={1} mb={1}>
-                          <Work fontSize="small" color="action" />
-                          <Chip
-                            label={job.employment_type.replace('_', ' ')}
-                            size="small"
-                            color="secondary"
-                          />
+                        
+                        <Box display="flex" alignItems="center" gap={1} mb={1}>
+                          <Business fontSize="small" color="action" />
+                          <Typography variant="body2" color="text.secondary">
+                            {job.company.name}
+                          </Typography>
                         </Box>
 
-                        <Box display="flex" alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }} gap={1} mb={1}>
-                          <Schedule fontSize="small" color="action" />
-                          <Chip
-                            label={job.remote_type.replace('_', ' ')}
-                            size="small"
-                            color={job.remote_type === 'remote' ? 'success' : 'default'}
-                          />
+                        <Box display="flex" alignItems="center" gap={1} mb={1}>
+                          <LocationOn fontSize="small" color="action" />
+                          <Typography variant="body2" color="text.secondary">
+                            {job.location}
+                          </Typography>
                         </Box>
 
                         <Typography 
-                          variant="caption" 
+                          variant="body2" 
                           color="text.secondary" 
-                          display="block"
-                          textAlign={{ xs: 'left', md: 'right' }}
-                          sx={{ mt: 2 }}
+                          sx={{ 
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            mb: 2
+                          }}
                         >
-                          Posted {formatDate(job.posted_date)}
+                          {job.description}
                         </Typography>
 
-                        <Button
-                          component={Link}
-                          to={`/jobs/${job.id}`}
-                          variant="outlined"
-                          size="small"
-                          sx={{ mt: 1 }}
-                          fullWidth={{ xs: false, md: true }}
-                        >
-                          View Details
-                        </Button>
-                      </Box>
+                        <Box display="flex" flexWrap="wrap" gap={1}>
+                          {job.skills_required.slice(0, 5).map((skill, index) => (
+                            <Chip
+                              key={index}
+                              label={skill}
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                            />
+                          ))}
+                          {job.skills_required.length > 5 && (
+                            <Chip
+                              label={`+${job.skills_required.length - 5} more`}
+                              size="small"
+                              variant="outlined"
+                            />
+                          )}
+                        </Box>
+                      </Grid>
+
+                      <Grid item xs={12} md={4}>
+                        <Box textAlign={{ xs: 'left', md: 'right' }}>
+                          {job.salary_min && (
+                            <Box display="flex" alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }} gap={1} mb={1}>
+                              <AttachMoney fontSize="small" color="action" />
+                              <Typography variant="body2" fontWeight="medium">
+                                {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
+                              </Typography>
+                            </Box>
+                          )}
+
+                          <Box display="flex" alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }} gap={1} mb={1}>
+                            <Work fontSize="small" color="action" />
+                            <Chip
+                              label={job.employment_type.replace('_', ' ')}
+                              size="small"
+                              color="secondary"
+                            />
+                          </Box>
+
+                          <Box display="flex" alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }} gap={1} mb={1}>
+                            <Schedule fontSize="small" color="action" />
+                            <Chip
+                              label={job.remote_type.replace('_', ' ')}
+                              size="small"
+                              color={job.remote_type === 'remote' ? 'success' : 'default'}
+                            />
+                          </Box>
+
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary" 
+                            display="block"
+                            textAlign={{ xs: 'left', md: 'right' }}
+                            sx={{ mt: 2 }}
+                          >
+                            Posted {formatDate(job.posted_date)}
+                          </Typography>
+
+                          <Button
+                            component={Link}
+                            to={`/jobs/${job.id}`}
+                            variant="outlined"
+                            size="small"
+                            sx={{ mt: 1, width: { xs: 'auto', md: '100%' } }}
+                          >
+                            View Details
+                          </Button>
+                        </Box>
+                      </Grid>
                     </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
 
-        {totalPages > 1 && (
-          <Box display="flex" justifyContent="center" sx={{ mt: 4 }}>
-            <Pagination
-              count={totalPages}
-              page={page}
-              onChange={handlePageChange}
-              color="primary"
-              size="large"
-            />
-          </Box>
-        )}
+          {totalPages > 1 && (
+            <Box display="flex" justifyContent="center" sx={{ mt: 4 }}>
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                color="primary"
+                size="large"
+              />
+            </Box>
+          )}
 
-        {jobs.length === 0 && !isLoading && (
-          <Box textAlign="center" sx={{ py: 4 }}>
-            <Typography variant="h6" color="text.secondary">
-              No jobs found matching your criteria
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Try adjusting your search filters
-            </Typography>
-          </Box>
-        )}
+          {jobs.length === 0 && !isLoading && (
+            <Box textAlign="center" sx={{ py: 4 }}>
+              <Typography variant="h6" color="text.secondary">
+                No jobs found matching your criteria
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Try adjusting your search filters
+              </Typography>
+            </Box>
+          )}
+        </>
       </Box>
     </Container>
   );
