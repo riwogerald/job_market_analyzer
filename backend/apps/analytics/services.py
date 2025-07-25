@@ -1,4 +1,4 @@
-from django.db.models import Count, Avg, Q
+from django.db.models import Count, Avg, Q, Min, Max
 from django.utils import timezone
 from datetime import datetime, timedelta
 from collections import Counter
