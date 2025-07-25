@@ -37,3 +37,17 @@ export const formatRelativeTime = (dateString: string): string => {
   if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
   return `${Math.floor(diffDays / 30)} months ago`;
 };
+
+export const formatSalary = (
+  minSalary: number, 
+  maxSalary?: number | null, 
+  currency: string = 'KES'
+): string => {
+  const formatAmount = (amount: number) => formatCurrency(amount, currency);
+  
+  if (maxSalary && maxSalary !== minSalary) {
+    return `${formatAmount(minSalary)} - ${formatAmount(maxSalary)}`;
+  }
+  
+  return formatAmount(minSalary);
+};
