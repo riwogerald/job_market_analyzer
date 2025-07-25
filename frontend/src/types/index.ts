@@ -23,6 +23,7 @@ export interface JobPosting {
   salary_min: number | null;
   salary_max: number | null;
   salary_currency: string;
+  salary_period?: string;
   skills_required: string[];
   technologies: string[];
   source_platform: string;
