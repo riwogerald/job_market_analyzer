@@ -40,7 +40,7 @@ const SkillsChart: React.FC = () => {
   const chartData = skillsData?.data?.map(skill => ({
     skill: skill.skill_name,
     demand: skill.demand_count,
-    salary: skill.average_salary
+    salary: skill.avg_salary
   })) || [];
 
   return (
