@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.indexes import GinIndex
 import uuid
 
 class Company(models.Model):
@@ -90,6 +91,8 @@ class JobPosting(models.Model):
             models.Index(fields=['experience_level', 'employment_type']),
             models.Index(fields=['posted_date', 'is_active']),
             models.Index(fields=['source_platform']),
+            GinIndex(fields=['skills_required']),
+            GinIndex(fields=['technologies']),
         ]
 
 class SalaryInsight(models.Model):

@@ -1,4 +1,5 @@
 from django.db.models import Count, Avg, Q, Min, Max
+from django.db.models.functions import TruncMonth, TruncDay, Unnest
 from django.utils import timezone
 from datetime import datetime, timedelta
 from collections import Counter
@@ -62,32 +63,33 @@ class AnalyticsService:
         ).order_by('-job_count')
 
     def get_remote_work_trends(self):
-        """Get remote work trends over time"""
-        # Group by month for the last 12 months
+        """Get remote work trends over time (optimized version)"""
+        twelve_months_ago = self.current_date - timedelta(days=365)
+        
+        # Group by month and count total and remote jobs
+        trends_data = JobPosting.objects.filter(
+            scraped_at__gte=twelve_months_ago,
+            is_active=True
+        ).annotate(
+            month=TruncMonth('scraped_at')
+        ).values('month').annotate(
+            total_jobs=Count('id'),
+            remote_jobs=Count('id', filter=Q(remote_type__in=['remote', 'hybrid']))
+        ).order_by('month')
+        
+        # Format the output
         trends = []
-        for i in range(12):
-            month_start = self.current_date - timedelta(days=30 * (i + 1))
-            month_end = self.current_date - timedelta(days=30 * i)
-            
-            total_jobs = JobPosting.objects.filter(
-                scraped_at__range=[month_start, month_end],
-                is_active=True
-            ).count()
-            
-            remote_jobs = JobPosting.objects.filter(
-                scraped_at__range=[month_start, month_end],
-                remote_type__in=['remote', 'hybrid'],
-                is_active=True
-            ).count()
-            
+        for item in trends_data:
+            total_jobs = item['total_jobs']
+            remote_jobs = item['remote_jobs']
             trends.append({
-                'month': month_start.strftime('%Y-%m'),
+                'month': item['month'].strftime('%Y-%m'),
                 'total_jobs': total_jobs,
                 'remote_jobs': remote_jobs,
                 'remote_percentage': (remote_jobs / total_jobs * 100) if total_jobs > 0 else 0
             })
         
-        return list(reversed(trends))
+        return trends
 
     def get_salary_insights(self, job_title=None, location=None):
         """Get salary insights for specific job title or location"""
@@ -122,7 +124,61 @@ class AnalyticsService:
         }
 
     def get_top_skills(self, limit=20):
-        """Get most in-demand skills"""
+        """Get most in-demand skills (optimized version)"""
+        try:
+            # Use database aggregation to count skills efficiently
+            skills_data = JobPosting.objects.filter(
+                is_active=True,
+                skills_required__isnull=False
+            ).annotate(
+                skill=Unnest('skills_required')
+            ).values('skill').annotate(
+                demand_count=Count('id')
+            ).order_by('-demand_count')[:limit]
+            
+            # Get salary information for top skills in a single query
+            top_skill_names = [item['skill'] for item in skills_data]
+            
+            if not top_skill_names:
+                return []
+            
+            # Calculate average salary for each skill
+            salary_data = JobPosting.objects.filter(
+                is_active=True,
+                skills_required__overlap=top_skill_names,
+                salary_min__isnull=False
+            ).annotate(
+                skill=Unnest('skills_required')
+            ).filter(
+                skill__in=top_skill_names
+            ).values('skill').annotate(
+                average_salary=Avg('salary_min')
+            )
+            
+            # Create salary lookup dictionary
+            salary_lookup = {item['skill']: item['average_salary'] for item in salary_data}
+            
+            # Combine demand count with salary data
+            skills_with_salary = []
+            for skill_info in skills_data:
+                skill_name = skill_info['skill']
+                avg_salary = salary_lookup.get(skill_name)
+                
+                skills_with_salary.append({
+                    'skill': skill_name,
+                    'demand_count': skill_info['demand_count'],
+                    'average_salary': round(avg_salary, 2) if avg_salary else None
+                })
+            
+            return skills_with_salary
+            
+        except Exception as e:
+            # Fallback to the original method if the optimized version fails
+            # This can happen if the database doesn't support Unnest
+            return self._get_top_skills_fallback(limit)
+    
+    def _get_top_skills_fallback(self, limit=20):
+        """Fallback method for get_top_skills using the original approach"""
         all_skills = []
         jobs = JobPosting.objects.filter(is_active=True).values_list('skills_required', flat=True)
         
@@ -170,28 +226,26 @@ class AnalyticsService:
         SkillDemand.objects.bulk_create(skill_objects)
 
     def get_hiring_trends(self, period_days=30):
-        """Get hiring trends over specified period"""
-        end_date = self.current_date
-        start_date = end_date - timedelta(days=period_days)
+        """Get hiring trends over specified period (optimized version)"""
+        start_date = self.current_date - timedelta(days=period_days)
         
-        # Daily job postings
+        # Group by day and count job postings
+        daily_trends_data = JobPosting.objects.filter(
+            scraped_at__gte=start_date,
+            is_active=True
+        ).annotate(
+            date=TruncDay('scraped_at')
+        ).values('date').annotate(
+            job_count=Count('id')
+        ).order_by('date')
+        
+        # Convert to list format
         daily_trends = []
-        current_date = start_date
-        
-        while current_date <= end_date:
-            next_date = current_date + timedelta(days=1)
-            
-            daily_count = JobPosting.objects.filter(
-                scraped_at__range=[current_date, next_date],
-                is_active=True
-            ).count()
-            
+        for item in daily_trends_data:
             daily_trends.append({
-                'date': current_date.strftime('%Y-%m-%d'),
-                'job_count': daily_count
+                'date': item['date'].strftime('%Y-%m-%d'),
+                'job_count': item['job_count']
             })
-            
-            current_date = next_date
         
         return daily_trends
 
