@@ -13,7 +13,9 @@ import {
   Alert,
   Button,
   Divider,
-  IconButton
+  IconButton,
+  Snackbar,
+  Alert as MuiAlert
 } from '@mui/material';
 import {
   LocationOn,
@@ -24,13 +26,15 @@ import {
   CalendarToday,
   OpenInNew,
   ArrowBack,
-  Visibility
+  Visibility,
+  Share
 } from '@mui/icons-material';
 import { jobsApi } from '../../services/api';
 import { formatSalary, formatDate } from '../../utils/formatters';
 
 const JobDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [shareSuccess, setShareSuccess] = React.useState(false);
 
   const { data, isLoading, error } = useQuery(
     ['job', id],
@@ -40,6 +44,25 @@ const JobDetail: React.FC = () => {
       staleTime: 5 * 60 * 1000, // 5 minutes
     }
   );
+
+  const handleShare = async () => {
+    const shareData = {
+      title: `${job.title} at ${job.company.name}`,
+      text: `Check out this job opportunity: ${job.title} at ${job.company.name}`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        setShareSuccess(true);
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -243,13 +266,8 @@ const JobDetail: React.FC = () => {
                   <Button
                     variant="outlined"
                     size="large"
-                    onClick={() => {
-                      navigator.share?.({
-                        title: job.title,
-                        text: `Check out this job opportunity: ${job.title} at ${job.company.name}`,
-                        url: window.location.href,
-                      }) || navigator.clipboard.writeText(window.location.href);
-                    }}
+                    onClick={handleShare}
+                    startIcon={<Share />}
                   >
                     Share Job
                   </Button>
@@ -360,6 +378,22 @@ const JobDetail: React.FC = () => {
             </Card>
           </Grid>
         </Grid>
+
+        {/* Share Success Snackbar */}
+        <Snackbar
+          open={shareSuccess}
+          autoHideDuration={3000}
+          onClose={() => setShareSuccess(false)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <MuiAlert
+            onClose={() => setShareSuccess(false)}
+            severity="success"
+            sx={{ width: '100%' }}
+          >
+            Job link copied to clipboard!
+          </MuiAlert>
+        </Snackbar>
       </Box>
     </Container>
   );

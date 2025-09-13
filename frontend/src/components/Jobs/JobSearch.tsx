@@ -10,9 +10,11 @@ import {
   MenuItem,
   Chip,
   Paper,
-  Typography
+  Typography,
+  Collapse,
+  IconButton
 } from '@mui/material';
-import { Search, Clear } from '@mui/icons-material';
+import { Search, Clear, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { SearchFilters } from '../../types';
 import { debounce } from 'lodash';
 
@@ -23,6 +25,7 @@ interface JobSearchProps {
 
 const JobSearch: React.FC<JobSearchProps> = ({ onFiltersChange, initialFilters = {} }) => {
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
+  const [expanded, setExpanded] = useState(false);
 
   const debouncedSearch = useCallback(
     debounce((searchFilters: SearchFilters) => {
@@ -46,9 +49,17 @@ const JobSearch: React.FC<JobSearchProps> = ({ onFiltersChange, initialFilters =
 
   return (
     <Paper sx={{ p: 3, mb: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Search Jobs
-      </Typography>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+        <Typography variant="h6">
+          Search Jobs
+        </Typography>
+        <IconButton
+          onClick={() => setExpanded(!expanded)}
+          aria-label="expand filters"
+        >
+          {expanded ? <ExpandLess /> : <ExpandMore />}
+        </IconButton>
+      </Box>
       
       <Grid container spacing={2} alignItems="center">
         <Grid item xs={12} md={4}>
@@ -74,7 +85,7 @@ const JobSearch: React.FC<JobSearchProps> = ({ onFiltersChange, initialFilters =
           />
         </Grid>
         
-        <Grid item xs={12} md={2}>
+        <Grid item xs={12} md={3}>
           <FormControl fullWidth>
             <InputLabel>Employment Type</InputLabel>
             <Select
@@ -93,24 +104,98 @@ const JobSearch: React.FC<JobSearchProps> = ({ onFiltersChange, initialFilters =
         </Grid>
         
         <Grid item xs={12} md={2}>
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<Clear />}
+            onClick={clearFilters}
+            disabled={activeFiltersCount === 0}
+          >
+            Clear
+          </Button>
+        </Grid>
+      </Grid>
+      
+      <Collapse in={expanded}>
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid item xs={12} md={2}>
+            <FormControl fullWidth>
+              <InputLabel>Experience Level</InputLabel>
+              <Select
+                value={filters.experience_level || ''}
+                onChange={(e) => handleFilterChange('experience_level', e.target.value)}
+                label="Experience Level"
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="entry">Entry Level</MenuItem>
+                <MenuItem value="mid">Mid Level</MenuItem>
+                <MenuItem value="senior">Senior Level</MenuItem>
+                <MenuItem value="executive">Executive</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          
+          <Grid item xs={12} md={2}>
           <FormControl fullWidth>
-            <InputLabel>Experience Level</InputLabel>
+              <InputLabel>Remote Type</InputLabel>
             <Select
-              value={filters.experience_level || ''}
-              onChange={(e) => handleFilterChange('experience_level', e.target.value)}
-              label="Experience Level"
+                value={filters.remote_type || ''}
+                onChange={(e) => handleFilterChange('remote_type', e.target.value)}
+                label="Remote Type"
             >
               <MenuItem value="">All</MenuItem>
-              <MenuItem value="entry">Entry Level</MenuItem>
-              <MenuItem value="mid">Mid Level</MenuItem>
-              <MenuItem value="senior">Senior Level</MenuItem>
-              <MenuItem value="executive">Executive</MenuItem>
+                <MenuItem value="on_site">On-site</MenuItem>
+                <MenuItem value="remote">Remote</MenuItem>
+                <MenuItem value="hybrid">Hybrid</MenuItem>
             </Select>
           </FormControl>
         </Grid>
-        
-        <Grid item xs={12} md={1}>
-          <Button
+          
+          <Grid item xs={12} md={2}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Min Salary"
+              value={filters.min_salary || ''}
+              onChange={(e) => handleFilterChange('min_salary', e.target.value ? Number(e.target.value) : undefined)}
+            />
+          </Grid>
+          
+          <Grid item xs={12} md={2}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Max Salary"
+              value={filters.max_salary || ''}
+              onChange={(e) => handleFilterChange('max_salary', e.target.value ? Number(e.target.value) : undefined)}
+            />
+          </Grid>
+          
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Skills"
+              placeholder="Python, React, Project Management (comma-separated)"
+              value={filters.skills || ''}
+              onChange={(e) => handleFilterChange('skills', e.target.value)}
+            />
+          </Grid>
+        </Grid>
+      </Collapse>
+      
+      {activeFiltersCount > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            {activeFiltersCount} filter{activeFiltersCount !== 1 ? 's' : ''} active
+          </Typography>
+        </Box>
+      )}
+    </Paper>
+  );
+};
+
+export default JobSearch;
+
             fullWidth
             variant="outlined"
             startIcon={<Clear />}

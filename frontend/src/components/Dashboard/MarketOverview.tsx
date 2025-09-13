@@ -7,7 +7,8 @@ import {
   Typography,
   Box,
   CircularProgress,
-  Icon
+  Icon,
+  Skeleton
 } from '@mui/material';
 import {
   Work,
@@ -18,6 +19,19 @@ import {
 import { jobsApi } from '../../services/api';
 import { formatCurrency, formatNumber } from '../../utils/formatters';
 
+const StatCardSkeleton: React.FC = () => (
+  <Card>
+    <CardContent>
+      <Box display="flex" alignItems="center" mb={2}>
+        <Skeleton variant="rectangular" width={40} height={40} sx={{ mr: 2, borderRadius: 2 }} />
+        <Skeleton variant="text" width={120} height={24} />
+      </Box>
+      <Skeleton variant="text" width={80} height={48} />
+      <Skeleton variant="text" width={100} height={20} />
+    </CardContent>
+  </Card>
+);
+
 const MarketOverview: React.FC = () => {
   const { data: overview, isLoading, error } = useQuery(
     'marketOverview',
@@ -27,9 +41,13 @@ const MarketOverview: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" p={4}>
-        <CircularProgress />
-      </Box>
+      <Grid container spacing={3}>
+        {[1, 2, 3, 4].map((item) => (
+          <Grid item xs={12} sm={6} md={3} key={item}>
+            <StatCardSkeleton />
+          </Grid>
+        ))}
+      </Grid>
     );
   }
 

@@ -12,17 +12,21 @@ import {
   CircularProgress,
   Alert,
   Button,
-  Divider
+  Divider,
+  Fab,
+  Tooltip
 } from '@mui/material';
 import {
   LocationOn,
   Work,
   Schedule,
   AttachMoney,
-  Business
+  Business,
+  Refresh
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { jobsApi } from '../../services/api';
+import { useQueryClient } from 'react-query';
 import { JobPosting, SearchFilters } from '../../types';
 import JobSearch from './JobSearch';
 import { formatSalary, formatDate } from '../../utils/formatters';
@@ -31,6 +35,7 @@ const JobList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<SearchFilters>({});
   const pageSize = 20;
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery(
     ['jobs', page, filters],
@@ -49,6 +54,10 @@ const JobList: React.FC = () => {
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
     setPage(1); // Reset to first page when filters change
+  };
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries(['jobs']);
   };
 
   const totalPages = data?.data.count ? Math.ceil(data.data.count / pageSize) : 0;
@@ -225,6 +234,22 @@ const JobList: React.FC = () => {
               </Typography>
             </Box>
           )}
+
+          {/* Floating Action Button for Refresh */}
+          <Tooltip title="Refresh job listings">
+            <Fab
+              color="primary"
+              aria-label="refresh"
+              onClick={handleRefresh}
+              sx={{
+                position: 'fixed',
+                bottom: 16,
+                right: 16,
+              }}
+            >
+              <Refresh />
+            </Fab>
+          </Tooltip>
         </>
       </Box>
     </Container>
